@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>HitBit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- FIXED FAVICON PATH -->
+  <link rel="icon" href="/HitBit/favicon.ico" type="image/x-icon">
+
+  <style>
+    :root {
+      --bg: #000;
+      --neon: #00ff88;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 24px;
+    }
+
+    #logo {
+      font-size: 42px;
+      font-weight: bold;
+      text-shadow: 0 0 20px var(--neon);
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 20px;
+      opacity: 0.8;
+      margin-bottom: 30px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      padding-bottom: 40px;
+    }
+
+    .game {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .game-card {
+      width: 100%;
+      height: 180px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 3px solid var(--neon);
+      box-shadow: 0 0 20px var(--neon);
+      transition: 0.2s ease;
+    }
+
+    .game-card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px var(--neon);
+    }
+
+    .game-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .game-title {
+      font-size: 18px;
+      margin-top: 8px;
+      text-shadow: 0 0 10px var(--neon);
+    }
+
+    .info-btn {
+      margin-top: 6px;
+      font-size: 15px;
+      cursor: pointer;
+      color: var(--neon);
+      text-decoration: underline;
+      opacity: 0.9;
+    }
+
+    .info-btn:hover {
+      opacity: 1;
+    }
+
+    #infoPanel {
+      position: fixed;
+      top: 0;
+      right: -450px;
+      width: 420px;
+      height: 100%;
+      background: #000;
+      border-left: 3px solid var(--neon);
+      box-shadow: -5px 0 20px var(--neon);
+      padding: 20px;
+      transition: right 0.35s ease;
+      z-index: 999;
+      overflow-y: auto;
+    }
+
+    #infoPanel.open {
+      right: 0;
+    }
+
+    #closePanel {
+      text-align: right;
+      font-size: 22px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    #panelTitle {
+      font-size: 26px;
+      font-weight: bold;
+      text-shadow: 0 0 15px var(--neon);
+      margin-bottom: 10px;
+    }
+
+    #panelContent {
+      font-size: 16px;
+      line-height: 1.5;
+      text-align: left;
+    }
+
+    @media (max-width: 700px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      #infoPanel {
+        width: 100%;
+        right: -100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- FIXED REDIRECT PROTECTION -->
+  <script>
+    const path = window.location.pathname.replace(/\/+$/, "");
+    if (path === "/HitBit/games") {
+      window.location.href = "/HitBit/";
+    }
+  </script>
+
+  <div id="logo">HitBit</div>
+  <div class="subtitle">Choose Your Challenge</div>
+
+  <div class="grid">
+
+    <!-- GAME 1 -->
+    <div class="game">
+      <a class="game-card" href="/HitBit/games/timingchallenge.html">
+        <img src="/HitBit/images/timing.png">
+      </a>
+      <div class="game-title">Timing Challenge</div>
+      <div class="info-btn" onclick="openInfo('timing')">Info</div>
+    </div>
+
+    <!-- GAME 2 -->
+    <div class="game">
+      <a class="game-card" href="/HitBit/games/visualreaction.html">
+        <img src="/HitBit/images/visual.png">
+      </a>
+      <div class="game-title">Visual Reaction</div>
+      <div class="info-btn" onclick="openInfo('reaction')">Info</div>
+    </div>
+
+    <!-- GAME 3 -->
+    <div class="game">
+      <a class="game-card" href="#">
+        <img src="/HitBit/images/comingsoon.png" style="opacity:0.25;">
+      </a>
+      <div class="game-title">Coming Soon</div>
+      <div class="info-btn" onclick="openInfo('coming')">Info</div>
+    </div>
+
+  </div>
+
+  <!-- INFO PANEL -->
+  <div id="infoPanel">
+    <div id="closePanel" onclick="closeInfo()">✕</div>
+    <div id="panelTitle"></div>
+    <div id="panelContent"></div>
+  </div>
+
+  <script>
+    function openInfo(game) {
+      const title = document.getElementById("panelTitle");
+      const content = document.getElementById("panelContent");
+
+      if (game === "timing") {
+        title.textContent = "Timing Challenge";
+        content.innerHTML = `
+          Tap exactly when the spinning line overlaps the target bar.<br><br>
+          <strong>How it works:</strong><br>
+          • A neon line rotates around the circle<br>
+          • A target bar appears somewhere on the ring<br>
+          • Your goal is to tap at the perfect moment the line crosses the bar<br><br>
+          <strong>Scoring:</strong><br>
+          • Perfect hits give bonus points<br>
+          • Spinner gets faster<br>
+          • Target shrinks<br>
+          • Build combos<br><br>
+          <strong>Trains:</strong><br>
+          • Timing<br>
+          • Rhythm<br>
+          • Precision<br>
+          • Focus<br>
+        `;
+      }
+
+      if (game === "reaction") {
+        title.textContent = "Visual Reaction Challenge";
+        content.innerHTML = `
+          React as fast as possible when the screen turns green.<br><br>
+          <strong>How it works:</strong><br>
+          • Tap to begin<br>
+          • Wait for green<br>
+          • Tap instantly<br><br>
+          <strong>Scoring:</strong><br>
+          • Reaction time in ms<br>
+          • Best saved locally<br><br>
+          <strong>Trains:</strong><br>
+          • Reflexes<br>
+          • Impulse control<br>
+          • Visual processing<br>
+        `;
+      }
+
+      if (game === "coming") {
+        title.textContent = "Coming Soon";
+        content.innerHTML = `
+          A new HitBit challenge is in development.<br><br>
+          Expect more neon chaos soon.
+        `;
+      }
+
+      document.getElementById("infoPanel").classList.add("open");
+    }
+
+    function closeInfo() {
+      document.getElementById("infoPanel").classList.remove("open");
+    }
+  </script>
+
+</body>
+</html>
