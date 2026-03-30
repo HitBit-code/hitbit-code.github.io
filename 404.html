@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>404 - Page Not Found</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Correct favicon path for GitHub Pages -->
+  <link rel="icon" href="/HitBit/favicon.ico" type="image/x-icon">
+  <link rel="shortcut icon" href="/HitBit/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/HitBit/favicon.ico">
+
+  <style>
+    :root {
+      --neon: #00ff88;
+      --bg: #000;
+      --glow: 0 0 20px #00ff88, 0 0 40px #00ff88;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--neon);
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .container {
+      animation: fadeIn 1s ease forwards;
+    }
+
+    h1 {
+      font-size: 80px;
+      font-weight: bold;
+      text-shadow: var(--glow);
+      letter-spacing: 4px;
+      animation: glitch 1.5s infinite;
+    }
+
+    p {
+      font-size: 22px;
+      opacity: 0.85;
+      margin-top: -10px;
+      margin-bottom: 25px;
+      text-shadow: 0 0 10px var(--neon);
+    }
+
+    a {
+      color: var(--neon);
+      font-size: 20px;
+      text-decoration: none;
+      padding: 10px 20px;
+      border: 2px solid var(--neon);
+      border-radius: 8px;
+      text-shadow: var(--glow);
+      transition: 0.2s ease;
+    }
+
+    a:hover {
+      background: var(--neon);
+      color: #000;
+      box-shadow: var(--glow);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes glitch {
+      0% { text-shadow: var(--glow); }
+      20% { text-shadow: 2px 0 #ff0066, -2px 0 #00ccff; }
+      40% { text-shadow: -2px 0 #ff0066, 2px 0 #00ccff; }
+      60% { text-shadow: var(--glow); }
+      80% { text-shadow: -3px 0 #ff0066, 3px 0 #00ccff; }
+      100% { text-shadow: var(--glow); }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>404</h1>
+    <p>This page glitched out of existence.</p>
+
+    <!-- FIXED home link -->
+    <a href="/HitBit/">Return to HitBit Home</a>
+  </div>
+</body>
+</html>
