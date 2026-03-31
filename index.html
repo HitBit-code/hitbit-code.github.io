@@ -1,9 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!-- ⭐ GOOGLE VERIFICATION META TAG -->
-  <meta name="google-site-verification" content="HlleK9wn857avK0DAuuxwoNd4ys6qjdN4mNqjG7cbxI" />
-
   <!-- ⭐ BING VERIFICATION META TAG -->
   <meta name="msvalidate.01" content="E4B2215A232B2D855D7B8ADE26C88488" />
 
@@ -28,7 +25,6 @@
       padding: 24px;
     }
 
-    /* ⭐ Updated logo to include icon */
     #logo {
       font-size: 42px;
       font-weight: bold;
@@ -121,15 +117,11 @@
       transition: right 0.35s ease;
       z-index: 999;
       overflow-y: auto;
-
-      /* ⭐ FIX: Prevent blocking content when closed */
       pointer-events: none;
     }
 
     #infoPanel.open {
       right: 0;
-
-      /* ⭐ FIX: Allow interaction only when open */
       pointer-events: auto;
     }
 
@@ -176,7 +168,6 @@
     }
   </script>
 
-  <!-- ⭐ Updated logo with favicon -->
   <div id="logo">
     <img src="/HitBit/favicon.ico?v=3" class="logo-icon">
     HitBit
@@ -204,13 +195,13 @@
       <div class="info-btn" onclick="openInfo('reaction')">Info</div>
     </div>
 
-    <!-- GAME 3 -->
+    <!-- GAME 3 — ORB-FALL -->
     <div class="game">
-      <a class="game-card" href="#">
-        <img src="/HitBit/images/comingsoon.png" style="opacity:0.25;">
+      <a class="game-card" href="/HitBit/games/Orb-Fall/">
+        <img src="/HitBit/images/Orb-Fall.png">
       </a>
-      <div class="game-title">Coming Soon</div>
-      <div class="info-btn" onclick="openInfo('coming')">Info</div>
+      <div class="game-title">Orb‑Fall</div>
+      <div class="info-btn" onclick="openInfo('orbfall')">Info</div>
     </div>
 
   </div>
@@ -234,17 +225,12 @@
           <strong>How it works:</strong><br>
           • A neon line rotates around the circle<br>
           • A target bar appears somewhere on the ring<br>
-          • Your goal is to tap at the perfect moment the line crosses the bar<br><br>
+          • Tap when the line crosses the bar<br><br>
           <strong>Scoring:</strong><br>
           • Perfect hits give bonus points<br>
           • Spinner gets faster<br>
           • Target shrinks<br>
-          • Build combos<br><br>
-          <strong>Trains:</strong><br>
-          • Timing<br>
-          • Rhythm<br>
-          • Precision<br>
-          • Focus<br>
+          • Build combos<br>
         `;
       }
 
@@ -258,19 +244,31 @@
           • Tap instantly<br><br>
           <strong>Scoring:</strong><br>
           • Reaction time in ms<br>
-          • Best saved locally<br><br>
-          <strong>Trains:</strong><br>
-          • Reflexes<br>
-          • Impulse control<br>
-          • Visual processing<br>
+          • Best saved locally<br>
         `;
       }
 
-      if (game === "coming") {
-        title.textContent = "Coming Soon";
+      if (game === "orbfall") {
+        title.textContent = "Orb‑Fall";
         content.innerHTML = `
-          A new HitBit challenge is in development.<br><br>
-          Expect more neon chaos soon.
+          Test your reflexes in <strong>Orb‑Fall</strong>, a fast‑paced arcade game where neon orbs fall from the top of the screen!<br><br>
+
+          <strong>How it works:</strong><br>
+          • Tap normal orbs to score points<br>
+          • Avoid bombs — they cost a heart<br>
+          • Catch hearts to stay alive<br>
+          • Build combos for massive scores<br><br>
+
+          <strong>Progression:</strong><br>
+          • Waves get faster and harder<br>
+          • Track your last 50 scores on a glowing line graph<br>
+          • Beat your high score and climb your own leaderboard<br><br>
+
+          <strong>Features:</strong><br>
+          • Neon arcade visuals<br>
+          • Smooth physics<br>
+          • Mobile + desktop friendly<br>
+          • Simple to play, hard to master<br>
         `;
       }
 
