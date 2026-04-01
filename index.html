@@ -5,7 +5,7 @@
   <meta name="msvalidate.01" content="E4B2215A232B2D855D7B8ADE26C88488" />
 
   <!-- ⭐ GOOGLE VERIFICATION META TAG -->
-  <meta name="google-site-verification" content="YOUR_GOOGLE_CODE_HERE" />
+  <meta name="google-site-verification" content="HlleK9wn857avK0DAuuxwoNd4ys6qjdN4mNqjG7cbxI" />
 
   <title>HitBit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -207,6 +207,15 @@
       <div class="info-btn" onclick="openInfo('orbfall')">Info</div>
     </div>
 
+    <!-- ⭐ GAME 4 — HITBIT STRAFE -->
+    <div class="game">
+      <a class="game-card" href="/HitBit/games/strafe/">
+        <img src="/HitBit/images/strafe.png">
+      </a>
+      <div class="game-title">HitBit Strafe</div>
+      <div class="info-btn" onclick="openInfo('strafe')">Info</div>
+    </div>
+
   </div>
 
   <!-- INFO PANEL -->
@@ -272,6 +281,25 @@
           • Smooth physics<br>
           • Mobile + desktop friendly<br>
           • Simple to play, hard to master<br>
+        `;
+      }
+
+      if (game === "strafe") {
+        title.textContent = "HitBit Strafe";
+        content.innerHTML = `
+          Track the orb with your crosshair in this unpredictable neon aim‑trainer.<br><br>
+
+          <strong>How it works:</strong><br>
+          • The orb moves with chaotic bursts and jukes<br>
+          • Stay on target to deal damage<br>
+          • Kill the orb to score points<br>
+          • 60‑second rounds<br><br>
+
+          <strong>Features:</strong><br>
+          • Neon arcade visuals<br>
+          • Smooth unpredictable movement<br>
+          • Accuracy graph at the end of each run<br>
+          • Desktop crosshair mode<br>
         `;
       }
 
