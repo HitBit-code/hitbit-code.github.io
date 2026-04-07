@@ -4,17 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<!-- Verification -->
 <meta name="msvalidate.01" content="E4B2215A232B2D855D7B8ADE26C88488">
 <meta name="google-site-verification" content="HlleK9wn857avK0DAuuxwoNd4ys6qjdN4mNqjG7cbxI">
+
+<!-- SEO -->
+<meta name="description" content="HitBit — a polished arcade hub of timing, reaction, and aim‑training games. Test your reflexes, precision, and speed with fast, modern browser‑based challenges.">
+
+<!-- Canonical -->
+<link rel="canonical" href="https://hitbit-code.github.io/HitBit/">
+
+<!-- OpenGraph -->
+<meta property="og:title" content="HitBit — Reaction & Aim Training Games">
+<meta property="og:description" content="A collection of polished arcade challenges for timing, reaction, and precision.">
+<meta property="og:image" content="https://hitbit-code.github.io/HitBit/images/preview.png">
+<meta property="og:url" content="https://hitbit-code.github.io/HitBit/">
+<meta property="og:type" content="website">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="HitBit — Reaction & Aim Training Games">
+<meta name="twitter:description" content="Test your reflexes and precision with polished arcade‑style browser games.">
+<meta name="twitter:image" content="https://hitbit-code.github.io/HitBit/images/preview.png">
 
 <title>HitBit</title>
 <link rel="icon" href="/HitBit/favicon.ico?v=3" type="image/x-icon">
 
+<!-- Preload -->
+<link rel="preload" href="/HitBit/images/timing.png" as="image">
+<link rel="preload" href="/HitBit/images/visual.png" as="image">
+<link rel="preload" href="/HitBit/images/Orb-Fall.png" as="image">
+<link rel="preload" href="/HitBit/images/strafe.png" as="image">
+
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
+/* (Your entire CSS stays exactly the same — unchanged) */
 :root {
   --bg: #050505;
   --accent: #00ff88; 
@@ -95,7 +123,6 @@ body {
   letter-spacing: -0.04em;
   line-height: 1.1;
   margin-bottom: 1.5rem;
-  /* Solid White Header */
   color: #FFFFFF;
 }
 
@@ -359,7 +386,7 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.game-card').forEach(card => observer.observe(card));
 
-// Info Panel Logic
+// Info Panel Logic (ORIGINAL TEXT RESTORED)
 function openInfo(game) {
   const title = document.getElementById("panelTitle");
   const content = document.getElementById("panelContent");
@@ -367,19 +394,72 @@ function openInfo(game) {
   const data = {
     timing: {
       t: "Timing Challenge",
-      c: "Tap exactly when the spinning line overlaps the target bar.<br><br><strong>How it works:</strong><br>• Line rotates around the center<br>• Tap when it enters the target zone<br>• Speed increases as you build combos"
+      c: `
+        Tap exactly when the spinning line overlaps the target bar.<br><br>
+        <strong>How it works:</strong><br>
+        • A neon line rotates around the circle<br>
+        • A target bar appears somewhere on the ring<br>
+        • Tap when the line crosses the bar<br><br>
+        <strong>Scoring:</strong><br>
+        • Perfect hits give bonus points<br>
+        • Spinner gets faster<br>
+        • Target shrinks<br>
+        • Build combos<br>
+      `
     },
     reaction: {
       t: "Visual Reaction",
-      c: "React as fast as possible when the screen turns green.<br><br><strong>How it works:</strong><br>• Hit the screen the millisecond it changes<br>• Precision tracking of your reaction speed"
+      c: `
+        React as fast as possible when the screen turns green.<br><br>
+        <strong>How it works:</strong><br>
+        • Tap to begin<br>
+        • Wait for green<br>
+        • Tap instantly<br><br>
+        <strong>Scoring:</strong><br>
+        • Reaction time in ms<br>
+        • Best saved locally<br>
+      `
     },
     orbfall: {
       t: "Orb-Fall",
-      c: "Fast-paced arcade reflex trainer.<br><br><strong>How it works:</strong><br>• Catch falling orbs for points<br>• Avoid red bombs to survive<br>• Catch pink hearts to heal"
+      c: `
+        Test your reflexes in <strong>Orb‑Fall</strong>, a fast‑paced arcade game where neon orbs fall from the top of the screen!<br><br>
+
+        <strong>How it works:</strong><br>
+        • Tap normal orbs to score points<br>
+        • Avoid bombs (red balls) — they cost a heart<br>
+        • Catch hearts (pink balls) to stay alive<br>
+        • Build combos for massive scores<br><br>
+
+        <strong>Progression:</strong><br>
+        • Waves get faster and harder<br>
+        • Track your last 50 scores on a glowing line graph<br>
+        • Beat your high score and climb your own leaderboard<br><br>
+
+        <strong>Features:</strong><br>
+        • Neon arcade visuals<br>
+        • Smooth physics<br>
+        • Mobile + desktop friendly<br>
+        • Simple to play, hard to master<br>
+      `
     },
     strafe: {
       t: "HitBit Strafe",
-      c: "High-precision aim and tracking trainer.<br><br><strong>How it works:</strong><br>• Track the target as it jukes and strafes<br>• Maintain uptime for higher damage"
+      c: `
+        Track the orb with your crosshair in this unpredictable neon aim‑trainer.<br><br>
+
+        <strong>How it works:</strong><br>
+        • The orb moves with chaotic bursts and jukes<br>
+        • Stay on target to deal damage<br>
+        • Kill the orb to score points<br>
+        • 60‑second rounds<br><br>
+
+        <strong>Features:</strong><br>
+        • Neon arcade visuals<br>
+        • Smooth unpredictable movement<br>
+        • Accuracy graph at the end of each run<br>
+        • Desktop crosshair mode<br>
+      `
     }
   };
 
