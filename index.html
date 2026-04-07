@@ -35,14 +35,14 @@
 <link rel="preload" href="/HitBit/images/visual.png" as="image">
 <link rel="preload" href="/HitBit/images/Orb-Fall.png" as="image">
 <link rel="preload" href="/HitBit/images/strafe.png" as="image">
+<link rel="preload" href="/HitBit/images/memory.png" as="image">
 
-<!-- Fonts -->
+<!-- Fonts (Overpass = closest to Highway Gothic) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-/* (Your entire CSS stays exactly the same — unchanged) */
 :root {
   --bg: #050505;
   --accent: #00ff88; 
@@ -60,7 +60,7 @@ body {
     radial-gradient(circle at 50% -10%, #0d2b1f 0%, transparent 50%),
     radial-gradient(circle at 0% 0%, #050505 0%, transparent 100%);
   color: white;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Overpass', system-ui, sans-serif;
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
@@ -71,7 +71,6 @@ body {
   position: sticky;
   top: 0;
   backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   background: rgba(5, 5, 5, 0.7);
   border-bottom: 1px solid var(--border);
   padding: 1rem 1.5rem;
@@ -176,6 +175,7 @@ body {
 }
 .game-card:hover::before { opacity: 1; }
 
+/* IMAGE */
 .game-image {
   width: 100%;
   aspect-ratio: 16/10;
@@ -183,12 +183,12 @@ body {
   transition: 0.6s ease;
   opacity: 0.9;
 }
-
 .game-card:hover .game-image {
   transform: scale(1.05);
   opacity: 1;
 }
 
+/* CARD BODY */
 .card-body {
   padding: 24px;
   display: flex;
@@ -198,7 +198,7 @@ body {
 
 .game-title {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #fff;
 }
 
@@ -244,7 +244,6 @@ body {
   height: calc(100% - 20px);
   background: rgba(10, 10, 10, 0.95);
   backdrop-filter: blur(30px);
-  -webkit-backdrop-filter: blur(30px);
   border: 1px solid var(--border);
   border-radius: 20px 0 0 20px;
   z-index: 2000;
@@ -309,6 +308,8 @@ footer {
 
 <main class="container">
   <div class="grid">
+
+    <!-- TIMING -->
     <div class="game-card">
       <img src="/HitBit/images/timing.png" class="game-image">
       <div class="card-body">
@@ -320,6 +321,7 @@ footer {
       </div>
     </div>
 
+    <!-- VISUAL -->
     <div class="game-card">
       <img src="/HitBit/images/visual.png" class="game-image">
       <div class="card-body">
@@ -331,6 +333,7 @@ footer {
       </div>
     </div>
 
+    <!-- ORB-FALL -->
     <div class="game-card">
       <img src="/HitBit/images/Orb-Fall.png" class="game-image">
       <div class="card-body">
@@ -342,6 +345,7 @@ footer {
       </div>
     </div>
 
+    <!-- STRAFE -->
     <div class="game-card">
       <img src="/HitBit/images/strafe.png" class="game-image">
       <div class="card-body">
@@ -352,6 +356,19 @@ footer {
         </div>
       </div>
     </div>
+
+    <!-- MEMORY -->
+    <div class="game-card">
+      <img src="/HitBit/images/memory.png" class="game-image">
+      <div class="card-body">
+        <h2 class="game-title">HitBit Memory</h2>
+        <div class="card-actions">
+          <a href="/HitBit/games/memory/" class="play-btn">Play</a>
+          <span class="info-btn" onclick="openInfo('memory')">Info</span>
+        </div>
+      </div>
+    </div>
+
   </div>
 </main>
 
@@ -386,7 +403,7 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.game-card').forEach(card => observer.observe(card));
 
-// Info Panel Logic (ORIGINAL TEXT RESTORED)
+// Info Panel Logic
 function openInfo(game) {
   const title = document.getElementById("panelTitle");
   const content = document.getElementById("panelContent");
@@ -459,6 +476,29 @@ function openInfo(game) {
         • Smooth unpredictable movement<br>
         • Accuracy graph at the end of each run<br>
         • Desktop crosshair mode<br>
+      `
+    },
+    memory: {
+      t: "HitBit Memory",
+      c: `
+        Repeat the glowing pattern on the 3×3 neon grid.<br><br>
+
+        <strong>How it works:</strong><br>
+        • Watch the sequence of glowing tiles<br>
+        • Repeat the pattern exactly<br>
+        • Each round adds one more tile<br>
+        • Difficulty ramps fast<br><br>
+
+        <strong>Rank System:</strong><br>
+        • Bronze → Silver → Gold → Diamond → Obsidian → Mythic<br>
+        • Each rank has 5 steps of progress<br>
+        • Your segment fills as you advance<br><br>
+
+        <strong>Features:</strong><br>
+        • Neon visuals<br>
+        • Smooth animations<br>
+        • Rank ladder with progress bar<br>
+        • Score graph tracking your last 20 runs<br>
       `
     }
   };
