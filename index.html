@@ -4,41 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- Verification -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "HitBit",
+  "url": "https://hitbit-code.github.io/HitBit/"
+}
+</script>
+
 <meta name="msvalidate.01" content="E4B2215A232B2D855D7B8ADE26C88488">
 <meta name="google-site-verification" content="HlleK9wn857avK0DAuuxwoNd4ys6qjdN4mNqjG7cbxI">
 
-<!-- SEO -->
+<title>HitBit — Skill Training Games</title>
 <meta name="description" content="HitBit is a collection of fast, polished arcade-style browser games for reaction time, memory, timing, and aim training. Play free skill challenges and track your performance.">
 <meta name="language" content="en">
 
-<!-- Canonical -->
 <link rel="canonical" href="https://hitbit-code.github.io/HitBit/">
 
-<!-- OpenGraph -->
+<meta property="og:site_name" content="HitBit">
 <meta property="og:title" content="HitBit — Reaction & Aim Training Games">
 <meta property="og:description" content="A collection of polished arcade challenges for timing, reaction, and precision.">
 <meta property="og:image" content="https://hitbit-code.github.io/HitBit/images/preview.png">
 <meta property="og:url" content="https://hitbit-code.github.io/HitBit/">
 <meta property="og:type" content="website">
 
-<!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="HitBit — Reaction & Aim Training Games">
 <meta name="twitter:description" content="Test your reflexes and precision with polished arcade-style browser games.">
 <meta name="twitter:image" content="https://hitbit-code.github.io/HitBit/images/preview.png">
 
-<title>HitBit — Skill Training Games</title>
 <link rel="icon" href="/HitBit/favicon.ico?v=3" type="image/x-icon">
+<link rel="apple-touch-icon" href="/HitBit/favicon.ico?v=3">
 
-<!-- Preload -->
 <link rel="preload" href="/HitBit/images/timing.png" as="image">
 <link rel="preload" href="/HitBit/images/visual.png" as="image">
 <link rel="preload" href="/HitBit/images/Orb-Fall.png" as="image">
 <link rel="preload" href="/HitBit/images/strafe.png" as="image">
 <link rel="preload" href="/HitBit/images/memory.png" as="image">
 
-<!-- Fonts (Overpass = closest to Highway Gothic) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@300;400;600;700;800&display=swap" rel="stylesheet">
@@ -310,7 +314,6 @@ footer {
 <main class="container">
   <div class="grid">
 
-    <!-- TIMING -->
     <div class="game-card">
       <img src="/HitBit/images/timing.png" class="game-image" alt="Timing Challenge game preview">
       <div class="card-body">
@@ -322,7 +325,6 @@ footer {
       </div>
     </div>
 
-    <!-- VISUAL -->
     <div class="game-card">
       <img src="/HitBit/images/visual.png" class="game-image" alt="Visual Reaction game preview">
       <div class="card-body">
@@ -334,7 +336,6 @@ footer {
       </div>
     </div>
 
-    <!-- ORB-FALL -->
     <div class="game-card">
       <img src="/HitBit/images/Orb-Fall.png" class="game-image" alt="Orb-Fall game preview">
       <div class="card-body">
@@ -346,7 +347,6 @@ footer {
       </div>
     </div>
 
-    <!-- STRAFE -->
     <div class="game-card">
       <img src="/HitBit/images/strafe.png" class="game-image" alt="HitBit Strafe game preview">
       <div class="card-body">
@@ -358,7 +358,6 @@ footer {
       </div>
     </div>
 
-    <!-- MEMORY -->
     <div class="game-card">
       <img src="/HitBit/images/memory.png" class="game-image" alt="HitBit Memory game preview">
       <div class="card-body">
@@ -384,7 +383,7 @@ footer {
 </footer>
 
 <script>
-// Mouse Tracking Spotlight
+// Logic remains unchanged...
 document.querySelectorAll('.game-card').forEach(card => {
   card.onmousemove = e => {
     const rect = card.getBoundingClientRect();
@@ -395,7 +394,6 @@ document.querySelectorAll('.game-card').forEach(card => {
   };
 });
 
-// Scroll Reveal
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
     if (entry.isIntersecting) entry.target.classList.add('visible');
@@ -404,104 +402,16 @@ const observer = new IntersectionObserver((entries) => {
 
 document.querySelectorAll('.game-card').forEach(card => observer.observe(card));
 
-// Info Panel Logic
 function openInfo(game) {
   const title = document.getElementById("panelTitle");
   const content = document.getElementById("panelContent");
   
   const data = {
-    timing: {
-      t: "Timing Challenge",
-      c: `
-        Tap exactly when the spinning line overlaps the target bar.<br><br>
-        <strong>How it works:</strong><br>
-        • A neon line rotates around the circle<br>
-        • A target bar appears somewhere on the ring<br>
-        • Tap when the line crosses the bar<br><br>
-        <strong>Scoring:</strong><br>
-        • Perfect hits give bonus points<br>
-        • Spinner gets faster<br>
-        • Target shrinks<br>
-        • Build combos<br>
-      `
-    },
-    reaction: {
-      t: "Visual Reaction",
-      c: `
-        React as fast as possible when the screen turns green.<br><br>
-        <strong>How it works:</strong><br>
-        • Tap to begin<br>
-        • Wait for green<br>
-        • Tap instantly<br><br>
-        <strong>Scoring:</strong><br>
-        • Reaction time in ms<br>
-        • Best saved locally<br>
-      `
-    },
-    orbfall: {
-      t: "Orb-Fall",
-      c: `
-        Test your reflexes in <strong>Orb-Fall</strong>, a fast-paced arcade game where neon orbs fall from the top of the screen!<br><br>
-
-        <strong>How it works:</strong><br>
-        • Tap normal orbs to score points<br>
-        • Avoid bombs (red balls) — they cost a heart<br>
-        • Catch hearts (pink balls) to stay alive<br>
-        • Build combos for massive scores<br><br>
-
-        <strong>Progression:</strong><br>
-        • Waves get faster and harder<br>
-        • Track your last 50 scores on a glowing line graph<br>
-        • Beat your high score and climb your own leaderboard<br><br>
-
-        <strong>Features:</strong><br>
-        • Neon arcade visuals<br>
-        • Smooth physics<br>
-        • Mobile + desktop friendly<br>
-        • Simple to play, hard to master<br>
-      `
-    },
-    strafe: {
-      t: "HitBit Strafe",
-      c: `
-        Track the orb with your crosshair in this unpredictable neon aim-trainer.<br><br>
-
-        <strong>How it works:</strong><br>
-        • The orb moves with chaotic bursts and jukes<br>
-        • Stay on target to deal damage<br>
-        • Kill the orb to score points<br>
-        • 60-second rounds<br><br>
-
-        <strong>Features:</strong><br>
-        • Neon arcade visuals<br>
-        • Smooth unpredictable movement<br>
-        • Accuracy graph at the end of each run<br>
-        • Desktop crosshair mode<br>
-      `
-    },
-    memory: {
-      t: "HitBit Memory",
-      c: `
-        Repeat the glowing pattern on the 3×3 neon grid.<br><br>
-
-        <strong>How it works:</strong><br>
-        • Watch the sequence of glowing tiles<br>
-        • Repeat the pattern exactly<br>
-        • Each round adds one more tile<br>
-        • Difficulty ramps fast<br><br>
-
-        <strong>Rank System:</strong><br>
-        • Bronze → Silver → Gold → Diamond → Obsidian → Mythic<br>
-        • Each rank has 5 steps of progress<br>
-        • Your segment fills as you advance<br><br>
-
-        <strong>Features:</strong><br>
-        • Neon visuals<br>
-        • Smooth animations<br>
-        • Rank ladder with progress bar<br>
-        • Score graph tracking your last 20 runs<br>
-      `
-    }
+    timing: { t: "Timing Challenge", c: `Tap exactly when the spinning line overlaps the target bar.<br><br><strong>How it works:</strong><br>• A neon line rotates around the circle<br>• A target bar appears somewhere on the ring<br>• Tap when the line crosses the bar<br><br><strong>Scoring:</strong><br>• Perfect hits give bonus points<br>• Spinner gets faster<br>• Target shrinks<br>• Build combos<br>` },
+    reaction: { t: "Visual Reaction", c: `React as fast as possible when the screen turns green.<br><br><strong>How it works:</strong><br>• Tap to begin<br>• Wait for green<br>• Tap instantly<br><br><strong>Scoring:</strong><br>• Reaction time in ms<br>• Best saved locally<br>` },
+    orbfall: { t: "Orb-Fall", c: `Test your reflexes in <strong>Orb-Fall</strong>, a fast-paced arcade game where neon orbs fall from the top of the screen!<br><br><strong>How it works:</strong><br>• Tap normal orbs to score points<br>• Avoid bombs (red balls) — they cost a heart<br>• Catch hearts (pink balls) to stay alive<br>• Build combos for massive scores<br><br><strong>Progression:</strong><br>• Waves get faster and harder<br>• Track your last 50 scores on a glowing line graph<br>• Beat your high score and climb your own leaderboard<br><br><strong>Features:</strong><br>• Neon arcade visuals<br>• Smooth physics<br>• Mobile + desktop friendly<br>• Simple to play, hard to master<br>` },
+    strafe: { t: "HitBit Strafe", c: `Track the orb with your crosshair in this unpredictable neon aim-trainer.<br><br><strong>How it works:</strong><br>• The orb moves with chaotic bursts and jukes<br>• Stay on target to deal damage<br>• Kill the orb to score points<br>• 60-second rounds<br><br><strong>Features:</strong><br>• Neon arcade visuals<br>• Smooth unpredictable movement<br>• Accuracy graph at the end of each run<br>• Desktop crosshair mode<br>` },
+    memory: { t: "HitBit Memory", c: `Repeat the glowing pattern on the 3×3 neon grid.<br><br><strong>How it works:</strong><br>• Watch the sequence of glowing tiles<br>• Repeat the pattern exactly<br>• Each round adds one more tile<br>• Difficulty ramps fast<br><br><strong>Rank System:</strong><br>• Bronze → Silver → Gold → Diamond → Obsidian → Mythic<br>• Each rank has 5 steps of progress<br>• Your segment fills as you advance<br><br><strong>Features:</strong><br>• Neon visuals<br>• Smooth animations<br>• Rank ladder with progress bar<br>• Score graph tracking your last 20 runs<br>` }
   };
 
   title.textContent = data[game].t;
@@ -513,6 +423,5 @@ function closeInfo() {
   document.getElementById("infoPanel").classList.remove("open");
 }
 </script>
-
 </body>
 </html>
