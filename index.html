@@ -107,7 +107,7 @@ body {
 
 /* HERO */
 .hero {
-  padding: 80px 24px 60px;
+  padding: 80px 24px 20px;
   text-align: center;
   max-width: 900px;
   margin: auto;
@@ -129,6 +129,32 @@ body {
   line-height: 1.1;
   margin-bottom: 1.5rem;
   color: #FFFFFF;
+}
+
+/* FEATURED */
+#featured{
+  max-width:1200px;
+  margin: 10px auto 40px;
+  padding:0 24px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+}
+
+.featured-label{
+  display:inline-block;
+  margin-bottom:10px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:2px;
+  color:#00ff88;
+  opacity:0.9;
+}
+
+#featured .game-card{
+  width:100%;
+  max-width:520px;
 }
 
 /* GRID & CARDS */
@@ -197,6 +223,38 @@ body {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+.card-top{
+  display:flex;
+  justify-content:flex-start;
+}
+
+.difficulty-badge{
+  font-size:11px;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:999px;
+  letter-spacing:0.5px;
+  border:1px solid rgba(255,255,255,0.08);
+}
+
+.difficulty-badge.easy{
+  color:#00ff88;
+  background:rgba(0,255,136,0.08);
+  box-shadow:0 0 12px rgba(0,255,136,0.15);
+}
+
+.difficulty-badge.medium{
+  color:#ffcc00;
+  background:rgba(255,204,0,0.08);
+  box-shadow:0 0 12px rgba(255,204,0,0.12);
+}
+
+.difficulty-badge.hard{
+  color:#ff4d6d;
+  background:rgba(255,77,109,0.08);
+  box-shadow:0 0 12px rgba(255,77,109,0.12);
 }
 
 .game-title {
@@ -293,6 +351,7 @@ footer {
 }
 </style>
 </head>
+
 <body>
 
 <nav class="navbar">
@@ -309,12 +368,15 @@ footer {
   <h1>Choose Your Challenge</h1>
 </header>
 
+<section id="featured"></section>
+
 <main class="container">
   <div class="grid">
 
     <div class="game-card">
-      <img src="/HitBit/images/stack.png" class="game-image" alt="HitBit Stack game preview">
+      <img src="/HitBit/images/stack.png" class="game-image">
       <div class="card-body">
+        <div class="card-top"><span class="difficulty-badge medium">Medium</span></div>
         <h2 class="game-title">HitBit Stack</h2>
         <div class="card-actions">
           <a href="/HitBit/games/stack/" class="play-btn">Play</a>
@@ -324,8 +386,9 @@ footer {
     </div>
 
     <div class="game-card">
-      <img src="/HitBit/images/timing.png" class="game-image" alt="Timing Challenge game preview">
+      <img src="/HitBit/images/timing.png" class="game-image">
       <div class="card-body">
+        <div class="card-top"><span class="difficulty-badge medium">Medium</span></div>
         <h2 class="game-title">Timing Challenge</h2>
         <div class="card-actions">
           <a href="/HitBit/games/timingchallenge" class="play-btn">Play</a>
@@ -335,8 +398,9 @@ footer {
     </div>
 
     <div class="game-card">
-      <img src="/HitBit/images/visual.png" class="game-image" alt="Visual Reaction game preview">
+      <img src="/HitBit/images/visual.png" class="game-image">
       <div class="card-body">
+        <div class="card-top"><span class="difficulty-badge easy">Easy</span></div>
         <h2 class="game-title">Visual Reaction</h2>
         <div class="card-actions">
           <a href="/HitBit/games/visualreaction" class="play-btn">Play</a>
@@ -346,8 +410,9 @@ footer {
     </div>
 
     <div class="game-card">
-      <img src="/HitBit/images/Orb-Fall.png" class="game-image" alt="Orb-Fall game preview">
+      <img src="/HitBit/images/Orb-Fall.png" class="game-image">
       <div class="card-body">
+        <div class="card-top"><span class="difficulty-badge hard">Hard</span></div>
         <h2 class="game-title">Orb-Fall</h2>
         <div class="card-actions">
           <a href="/HitBit/games/Orb-Fall/" class="play-btn">Play</a>
@@ -357,8 +422,9 @@ footer {
     </div>
 
     <div class="game-card">
-      <img src="/HitBit/images/strafe.png" class="game-image" alt="HitBit Strafe game preview">
+      <img src="/HitBit/images/strafe.png" class="game-image">
       <div class="card-body">
+        <div class="card-top"><span class="difficulty-badge hard">Hard</span></div>
         <h2 class="game-title">HitBit Strafe</h2>
         <div class="card-actions">
           <a href="/HitBit/games/strafe/" class="play-btn">Play</a>
@@ -368,8 +434,9 @@ footer {
     </div>
 
     <div class="game-card">
-      <img src="/HitBit/images/memory.png" class="game-image" alt="HitBit Memory game preview">
+      <img src="/HitBit/images/memory.png" class="game-image">
       <div class="card-body">
+        <div class="card-top"><span class="difficulty-badge medium">Medium</span></div>
         <h2 class="game-title">HitBit Memory</h2>
         <div class="card-actions">
           <a href="/HitBit/games/memory/" class="play-btn">Play</a>
@@ -413,14 +480,32 @@ document.querySelectorAll('.game-card').forEach(card => observer.observe(card));
 function openInfo(game) {
   const title = document.getElementById("panelTitle");
   const content = document.getElementById("panelContent");
-  
+
   const data = {
-    stack: { t: "HitBit Stack", c: `Test your rhythm and precision by stacking blocks as high as you can.<br><br><strong>How it works:</strong><br>• Blocks slide back and forth across the screen<br>• Tap/Space to drop the block onto the stack<br>• Any part of the block hanging over the edge is sliced off<br>• The blocks get smaller as you miss<br><br><strong>Features:</strong><br>• 3D Isometric neon style<br>• Smooth camera scrolling<br>• Lives system to keep you in the game<br>• Performance stats (Height, Accuracy, Highscore)` },
-    timing: { t: "Timing Challenge", c: `Tap exactly when the spinning line overlaps the target bar.<br><br><strong>How it works:</strong><br>• A neon line rotates around the circle<br>• A target bar appears somewhere on the ring<br>• Tap when the line crosses the bar<br><br><strong>Scoring:</strong><br>• Perfect hits give bonus points<br>• Spinner gets faster<br>• Build combos<br>` },
-    reaction: { t: "Visual Reaction", c: `React as fast as possible when the screen turns green.<br><br><strong>How it works:</strong><br>• Tap to begin<br>• Wait for green<br>• Tap instantly<br><br><strong>Scoring:</strong><br>• Reaction time in ms<br>• Best saved locally<br>` },
-    orbfall: { t: "Orb-Fall", c: `Test your reflexes in <strong>Orb-Fall</strong>, a fast-paced arcade game where neon orbs fall from the top of the screen!<br><br><strong>How it works:</strong><br>• Tap normal orbs to score points<br>• Avoid bombs (red balls) — they cost a heart<br>• Catch hearts (pink balls) to stay alive<br>• Build combos for massive scores<br>` },
-    strafe: { t: "HitBit Strafe", c: `Track the orb with your crosshair in this unpredictable neon aim-trainer.<br><br><strong>How it works:</strong><br>• The orb moves with chaotic bursts and jukes<br>• Stay on target to deal damage<br>• Kill the orb to score points<br>• 60-second rounds<br>` },
-    memory: { t: "HitBit Memory", c: `Repeat the glowing pattern on the 3×3 neon grid.<br><br><strong>How it works:</strong><br>• Watch the sequence of glowing tiles<br>• Repeat the pattern exactly<br>• Each round adds one more tile<br><br><strong>Rank System:</strong><br>• Bronze → Mythic<br>• Score graph tracking your last 20 runs<br>` }
+    stack: {
+      t: "HitBit Stack",
+      c: `Test your rhythm and precision by stacking blocks as high as you can.<br><br><strong>How it works:</strong><br>• Blocks slide back and forth across the screen<br>• Tap/Space to drop the block onto the stack<br>• Any part of the block hanging over the edge is sliced off<br>• The blocks get smaller as you miss<br><br><strong>Features:</strong><br>• 3D Isometric neon style<br>• Smooth camera scrolling<br>• Lives system to keep you in the game<br>• Performance stats (Height, Accuracy, Highscore)`
+    },
+    timing: {
+      t: "Timing Challenge",
+      c: `Tap exactly when the spinning line overlaps the target bar.<br><br><strong>How it works:</strong><br>• A neon line rotates around the circle<br>• A target bar appears somewhere on the ring<br>• Tap when the line crosses the bar<br><br><strong>Scoring:</strong><br>• Perfect hits give bonus points<br>• Spinner gets faster<br>• Build combos`
+    },
+    reaction: {
+      t: "Visual Reaction",
+      c: `React as fast as possible when the screen turns green.<br><br><strong>How it works:</strong><br>• Tap to begin<br>• Wait for green<br>• Tap instantly<br><br><strong>Scoring:</strong><br>• Reaction time in ms<br>• Best saved locally`
+    },
+    orbfall: {
+      t: "Orb-Fall",
+      c: `Test your reflexes in Orb-Fall, a fast-paced arcade game where neon orbs fall from the top of the screen!<br><br><strong>How it works:</strong><br>• Tap normal orbs to score points<br>• Avoid bombs (red balls) — they cost a heart<br>• Catch hearts (pink balls) to stay alive<br>• Build combos for massive scores`
+    },
+    strafe: {
+      t: "HitBit Strafe",
+      c: `Track the orb with your crosshair in this unpredictable neon aim-trainer.<br><br><strong>How it works:</strong><br>• The orb moves with chaotic bursts and jukes<br>• Stay on target to deal damage<br>• Kill the orb to score points<br>• 60-second rounds`
+    },
+    memory: {
+      t: "HitBit Memory",
+      c: `Repeat the glowing pattern on the 3×3 neon grid.<br><br><strong>How it works:</strong><br>• Watch the sequence of glowing tiles<br>• Repeat the pattern exactly<br>• Each round adds one more tile<br><br><strong>Rank System:</strong><br>• Bronze → Mythic<br>• Score graph tracking your last 20 runs`
+    }
   };
 
   title.textContent = data[game].t;
@@ -431,6 +516,78 @@ function openInfo(game) {
 function closeInfo() {
   document.getElementById("infoPanel").classList.remove("open");
 }
+
+/* FEATURED ROTATION */
+const featuredGames = [
+  {
+    title: "Visual Reaction",
+    image: "/HitBit/images/visual.png",
+    link: "/HitBit/games/visualreaction",
+    description: "Test raw reaction speed against a color change trigger.",
+    difficulty: "easy"
+  },
+  {
+    title: "HitBit Memory",
+    image: "/HitBit/images/memory.png",
+    link: "/HitBit/games/memory/",
+    description: "Repeat growing neon patterns in sequence.",
+    difficulty: "medium"
+  },
+  {
+    title: "HitBit Stack",
+    image: "/HitBit/images/stack.png",
+    link: "/HitBit/games/stack/",
+    description: "Stack blocks perfectly to build the tallest tower.",
+    difficulty: "medium"
+  },
+  {
+    title: "Orb-Fall",
+    image: "/HitBit/images/Orb-Fall.png",
+    link: "/HitBit/games/Orb-Fall/",
+    description: "Dodge bombs and collect orbs.",
+    difficulty: "hard"
+  },
+  {
+    title: "HitBit Strafe",
+    image: "/HitBit/images/strafe.png",
+    link: "/HitBit/games/strafe/",
+    description: "Track and eliminate the chaotic orb.",
+    difficulty: "hard"
+  }
+];
+
+function getDayIndex(){
+  const now = new Date();
+  const utc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return Math.floor(utc / 86400000);
+}
+
+function renderFeatured(){
+  const index = getDayIndex() % featuredGames.length;
+  const game = featuredGames[index];
+
+  document.getElementById("featured").innerHTML = `
+    <div class="featured-label">FEATURED</div>
+    <div class="game-card visible">
+      <img src="${game.image}" class="game-image">
+      <div class="card-body">
+        <div class="card-top">
+          <span class="difficulty-badge ${game.difficulty}">
+            ${game.difficulty.toUpperCase()}
+          </span>
+        </div>
+        <h2 class="game-title">${game.title}</h2>
+        <p style="color:#94a3b8;font-size:0.9rem;">${game.description}</p>
+        <div class="card-actions">
+          <a href="${game.link}" class="play-btn">Play</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+renderFeatured();
 </script>
+
 </body>
 </html>
