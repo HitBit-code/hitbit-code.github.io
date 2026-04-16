@@ -159,7 +159,7 @@
 
 <script>
 document.getElementById("titleButton").onclick = () => {
-    window.location.href = "index.html";
+    window.location.href = "/HitBit/index.html";
 };
 
 const canvas = document.getElementById("game");
@@ -291,7 +291,6 @@ function update(dt){
 
         if(ball.strafeFlipCooldown>0) ball.strafeFlipCooldown--;
 
-        // HARDER AI: flip directions more often
         if(ball.strafeFlipCooldown===0 && Math.random()<0.25){
             const flipType = Math.random();
             if(flipType<0.3) ball.strafeDirX*=-1;
@@ -300,7 +299,6 @@ function update(dt){
             ball.strafeFlipCooldown = 5;
         }
 
-        // HARDER AI: less pausing, more bursts, stronger randomness
         if(!ball.strafePause && Math.random()<0.01) ball.strafePause=3;
 
         if(ball.strafePause>0){
