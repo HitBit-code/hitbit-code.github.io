@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;700;900&display=swap" rel="stylesheet">
   
-  <link rel="icon" href="/HitBit/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
   <style>
     :root {
@@ -112,17 +112,18 @@
     <p class="code">404</p>
     <h1>Page not found</h1>
     <p id="status-msg">The requested resource could not be found.</p>
-    <a href="/HitBit/" class="btn">Back to homepage</a>
+    <a href="/" class="btn">Back to homepage</a>
   </div>
 
   <script>
+    // All paths updated to remove /HitBit/
     const pageMap = {
-      "strafe": "/HitBit/games/strafe/",
-      "stack": "/HitBit/games/stack/",
-      "visualreaction": "/HitBit/games/visualreaction/",
-      "timingchallenge": "/HitBit/games/timingchallenge/",
-      "orb-fall": "/HitBit/games/Orb-Fall/",
-      "memory": "/HitBit/games/memory/"
+      "strafe": "/games/strafe/",
+      "stack": "/games/stack/",
+      "visualreaction": "/games/visualreaction/",
+      "timingchallenge": "/games/timingchallenge/",
+      "orb-fall": "/games/Orb-Fall/",
+      "memory": "/games/memory/"
     };
 
     function getLevenshteinDistance(a, b) {
@@ -143,13 +144,10 @@
       const userTyped = pathSegments[pathSegments.length - 1] || "";
       const cleanInput = userTyped.toLowerCase().replace(".html", "");
       
-      // Don't redirect if the input is too short or just the site name
       if (cleanInput.length < 2 || cleanInput === "hitbit") return;
 
       let bestMatchKey = null;
       
-      // 1. First Check: Direct 'Contains' (Highest Priority)
-      // If they type 'st', it finds 'strafe' or 'stack'
       for (let key in pageMap) {
         if (key.includes(cleanInput) || cleanInput.includes(key)) {
           bestMatchKey = key;
@@ -157,9 +155,8 @@
         }
       }
 
-      // 2. Second Check: Fuzzy Match (If 'contains' fails)
       if (!bestMatchKey) {
-        let minDistance = 4; // Increased tolerance
+        let minDistance = 4;
         Object.keys(pageMap).forEach(key => {
           const distance = getLevenshteinDistance(cleanInput, key);
           if (distance < minDistance) {
@@ -176,7 +173,7 @@
         
         setTimeout(() => {
           window.location.href = pageMap[bestMatchKey];
-        }, 800); // Faster redirect for better UX
+        }, 800);
       }
     }
 
