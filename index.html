@@ -397,7 +397,7 @@ footer {
   <section>
     <h2 class="section-title">Games</h2>
     <div class="game-grid">
-      <article class="game-card">
+      <article class="game-card" data-href="/games/stack/" tabindex="0">
         <img src="/images/stack.png" alt="HitBit Stack preview">
         <div class="card-body">
           <div class="card-top">
@@ -413,7 +413,7 @@ footer {
         </div>
       </article>
 
-      <article class="game-card">
+      <article class="game-card" data-href="/games/timingchallenge" tabindex="0">
         <img src="/images/timing.png" alt="Timing Challenge preview">
         <div class="card-body">
           <div class="card-top">
@@ -429,7 +429,7 @@ footer {
         </div>
       </article>
 
-      <article class="game-card">
+      <article class="game-card" data-href="/games/visualreaction" tabindex="0">
         <img src="/images/visual.png" alt="Visual Reaction preview">
         <div class="card-body">
           <div class="card-top">
@@ -445,7 +445,7 @@ footer {
         </div>
       </article>
 
-      <article class="game-card">
+      <article class="game-card" data-href="/games/Orb-Fall/" tabindex="0">
         <img src="/images/Orb-Fall.png" alt="Orb-Fall preview">
         <div class="card-body">
           <div class="card-top">
@@ -461,7 +461,7 @@ footer {
         </div>
       </article>
 
-      <article class="game-card">
+      <article class="game-card" data-href="/games/strafe/" tabindex="0">
         <img src="/images/strafe.png" alt="HitBit Strafe preview">
         <div class="card-body">
           <div class="card-top">
@@ -477,7 +477,7 @@ footer {
         </div>
       </article>
 
-      <article class="game-card">
+      <article class="game-card" data-href="/games/memory/" tabindex="0">
         <img src="/images/memory.png" alt="HitBit Memory preview">
         <div class="card-body">
           <div class="card-top">
@@ -601,6 +601,20 @@ function renderFeatured() {
   document.getElementById("featuredLink").href = game.link;
   document.querySelector(".featured .btn-muted").setAttribute("onclick", `openInfo('${game.info}')`);
 }
+
+document.querySelectorAll(".game-card").forEach((card) => {
+  card.addEventListener("click", (event) => {
+    if (event.target.closest("a, button")) return;
+    window.location.href = card.dataset.href;
+  });
+
+  card.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    if (event.target.closest("a, button")) return;
+    event.preventDefault();
+    window.location.href = card.dataset.href;
+  });
+});
 
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") closeInfo();
