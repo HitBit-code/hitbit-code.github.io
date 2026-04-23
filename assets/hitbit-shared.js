@@ -65,6 +65,19 @@
     return NAME_PATTERN.test(name);
   }
 
+  function collapseRepeatedLetters(value) {
+    return String(value || "").replace(/([a-z])\1+/gi, "$1");
+  }
+
+  function normalizeNameForProfanity(name) {
+    const stripped = String(name || "")
+      .toLowerCase()
+      .replace(/[_-]+/g, "")
+      .replace(/[^a-z0-9]/g, "");
+
+    return collapseRepeatedLetters(stripped);
+  }
+
   function loadProfanityModule() {
     if (!state.profanityModulePromise) {
       state.profanityModulePromise = import("https://cdn.skypack.dev/leo-profanity");
@@ -77,7 +90,8 @@
     try {
       const module = await loadProfanityModule();
       if (!module || typeof module.check !== "function") return false;
-      return module.check(name);
+      const normalized = normalizeNameForProfanity(name);
+      return module.check(name) || module.check(normalized);
     } catch (error) {
       return false;
     }
