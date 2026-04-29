@@ -66,6 +66,33 @@ body {
     max-width: 600px;
     height: 200px;
 }
+
+#debugPanel {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.95);
+    color: #00ff00;
+    padding: 15px;
+    border: 2px solid #00ff00;
+    font-size: 11px;
+    max-width: 400px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 100;
+    font-family: monospace;
+    display: none;
+    line-height: 1.4;
+}
+
+#debugPanel.show {
+    display: block;
+}
+
+#debugPanel > div {
+    margin: 3px 0;
+    word-break: break-word;
+}
 </style>
 </head>
 <body data-hitbit-page="game" data-hitbit-game="orbfall" data-hitbit-remove="#hitbit">
@@ -74,12 +101,23 @@ body {
 <div id="combo"></div>
 <div id="gameover"></div>
 <div id="startScreen">Click to Start</div>
+<div id="debugPanel"></div>
 
 <canvas id="game"></canvas>
 
 <script>
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
+const debugPanel = document.getElementById("debugPanel");
+let debugLogs = [];
+
+function addDebug(msg) {
+    console.log("[ORBFALL]", msg);
+    debugLogs.push(msg);
+    if (debugLogs.length > 25) debugLogs.shift();
+    debugPanel.innerHTML = debugLogs.map(m => `<div>${m}</div>`).join("");
+    debugPanel.classList.add("show");
+}
 
 // Resize canvas
 function resizeCanvas() {
@@ -152,7 +190,7 @@ let livesLost = 0;
 let missedNormals = 0;
 let runStartedAt = 0;
 let runEventLog = "";
-let runEventTimestamps = [];  // ✅ NEW: Track timestamps for each event
+let runEventTimestamps = [];
 
 const NORMAL = "normal";
 const BOMB = "bomb";
@@ -197,7 +235,6 @@ function spawnWave() {
     wave++;
 }
 
-// ✅ FIXED HERE
 function updateBalls(dt) {
     let lostHeartThisFrame = false;
 
@@ -219,7 +256,7 @@ function updateBalls(dt) {
             if (!lostHeartThisFrame && b.type === NORMAL) {
                 missedNormals++;
                 runEventLog += "M";
-                runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record miss timestamp
+                runEventTimestamps.push(Date.now() - runStartedAt);
                 loseHeart();
                 combo = 0;
                 lostHeartThisFrame = true;
@@ -248,7 +285,7 @@ function handleClick(b) {
     if (b.type === BOMB) {
         bombHits++;
         runEventLog += "B";
-        runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record bomb timestamp
+        runEventTimestamps.push(Date.now() - runStartedAt);
         playSound("bomb");
         loseHeart();
         combo = 0;
@@ -258,7 +295,7 @@ function handleClick(b) {
     if (b.type === HEART) {
         heartsCollected++;
         runEventLog += "H";
-        runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record heart timestamp
+        runEventTimestamps.push(Date.now() - runStartedAt);
         playSound("heart");
         hearts = Math.min(5, hearts + 1);
         combo++;
@@ -271,7 +308,7 @@ function handleClick(b) {
     if (combo > maxCombo) maxCombo = combo;
     normalHits++;
     runEventLog += "N";
-    runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record normal hit timestamp
+    runEventTimestamps.push(Date.now() - runStartedAt);
     score += 10 * combo;
 }
 
@@ -337,7 +374,8 @@ function startGame() {
     livesLost = 0;
     missedNormals = 0;
     runEventLog = "";
-    runEventTimestamps = [];  // ✅ NEW: Reset timestamps at game start
+    runEventTimestamps = [];
+    addDebug("Game started");
     window.HitBitGlobal?.startSession("orbfall");
     document.getElementById("startScreen").style.display = "none";
 }
@@ -371,22 +409,65 @@ function showGameOver() {
 
     document.getElementById("gameover").style.display = "block";
 
-    window.HitBitGlobal?.submitScore({
-        game: "orbfall",
-        score,
-        stats: {
-            maxCombo,
-            wavesSurvived: Math.max(0, wave - 1),
-            orbHits: normalHits,
-            bombHits,
-            heartsCollected,
-            livesLost,
-            missedNormals,
-            durationMs: Math.max(0, Date.now() - runStartedAt),
-            eventLog: runEventLog,
-            eventTimestamps: runEventTimestamps  // ✅ NEW: Include timestamps in submission
+    const durationMs = Math.max(0, Date.now() - runStartedAt);
+    
+    const statsPayload = {
+        maxCombo,
+        wavesSurvived: Math.max(0, wave - 1),
+        orbHits: normalHits,
+        bombHits,
+        heartsCollected,
+        livesLost,
+        missedNormals,
+        durationMs,
+        eventLog: runEventLog,
+        eventTimestamps: runEventTimestamps
+    };
+
+    addDebug(`📊 Score: ${score}, Duration: ${durationMs}ms`);
+    addDebug(`📝 Events: ${runEventLog} (${runEventTimestamps.length} timestamps)`);
+    addDebug(`✅ Submitting score...`);
+
+    // Make sure HitBitGlobal is available
+    if (!window.HitBitGlobal) {
+        addDebug(`❌ ERROR: HitBitGlobal not loaded yet!`);
+        return;
+    }
+
+    // Call submitScore synchronously and handle the result
+    try {
+        const result = window.HitBitGlobal.submitScore({
+            game: "orbfall",
+            score,
+            stats: statsPayload
+        });
+
+        // Handle both promise and direct result
+        if (result && typeof result.then === 'function') {
+            // It's a promise
+            result
+                .then(res => {
+                    addDebug(`✅ Response: ok=${res.ok}`);
+                    if (res.suspicious) {
+                        addDebug(`⚠️ Marked suspicious: ${res.reason}`);
+                    }
+                    if (res.saved === false) {
+                        addDebug(`ℹ️ Not saved: ${res.reason}`);
+                    }
+                    if (res.error) {
+                        addDebug(`❌ Error: ${res.error}`);
+                    }
+                })
+                .catch(err => {
+                    addDebug(`❌ Promise error: ${err?.message || String(err)}`);
+                });
+        } else {
+            // Direct result
+            addDebug(`✅ Direct result: ${JSON.stringify(result).substring(0, 100)}`);
         }
-    });
+    } catch (err) {
+        addDebug(`❌ Exception: ${err?.message || String(err)}`);
+    }
 
     const graphCanvas = document.getElementById("scoreGraph");
     const g = graphCanvas.getContext("2d");
