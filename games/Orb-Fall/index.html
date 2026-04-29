@@ -225,7 +225,8 @@ function spawnBall() {
         gravity: 0.25,
         type,
         inScreen: false,
-        maxHeight: maxHeightMargin
+        maxHeight: maxHeightMargin,
+        spawnTime: Date.now() - runStartedAt  // Track when this ball was spawned
     });
 }
 
@@ -252,11 +253,15 @@ function updateBalls(dt) {
 
         if (!b.inScreen && b.y - b.radius <= canvas.height) b.inScreen = true;
 
+        // When a ball leaves the bottom of screen, record as miss ONLY for normals
         if (b.inScreen && b.y - b.radius > canvas.height) {
             if (!lostHeartThisFrame && b.type === NORMAL) {
                 missedNormals++;
+                // Record miss with the spawn's "life end" time instead of current time
+                // Spawn life = spawnTime + enterDelayMs + lifeMs ≈ spawnTime + 2500
+                const missTime = b.spawnTime + 2500;
                 runEventLog += "M";
-                runEventTimestamps.push(Date.now() - runStartedAt);
+                runEventTimestamps.push(missTime);
                 loseHeart();
                 combo = 0;
                 lostHeartThisFrame = true;
@@ -282,10 +287,12 @@ function handleInput(x, y) {
 }
 
 function handleClick(b) {
+    const eventTime = Date.now() - runStartedAt;
+
     if (b.type === BOMB) {
         bombHits++;
         runEventLog += "B";
-        runEventTimestamps.push(Date.now() - runStartedAt);
+        runEventTimestamps.push(eventTime);
         playSound("bomb");
         loseHeart();
         combo = 0;
@@ -295,7 +302,7 @@ function handleClick(b) {
     if (b.type === HEART) {
         heartsCollected++;
         runEventLog += "H";
-        runEventTimestamps.push(Date.now() - runStartedAt);
+        runEventTimestamps.push(eventTime);
         playSound("heart");
         hearts = Math.min(5, hearts + 1);
         combo++;
@@ -308,7 +315,7 @@ function handleClick(b) {
     if (combo > maxCombo) maxCombo = combo;
     normalHits++;
     runEventLog += "N";
-    runEventTimestamps.push(Date.now() - runStartedAt);
+    runEventTimestamps.push(eventTime);
     score += 10 * combo;
 }
 
@@ -375,7 +382,7 @@ function startGame() {
     missedNormals = 0;
     runEventLog = "";
     runEventTimestamps = [];
-    addDebug("Game started");
+    addDebug("✅ Game started");
     window.HitBitGlobal?.startSession("orbfall");
     document.getElementById("startScreen").style.display = "none";
 }
@@ -428,13 +435,11 @@ function showGameOver() {
     addDebug(`📝 Events: ${runEventLog} (${runEventTimestamps.length} timestamps)`);
     addDebug(`✅ Submitting score...`);
 
-    // Make sure HitBitGlobal is available
     if (!window.HitBitGlobal) {
-        addDebug(`❌ ERROR: HitBitGlobal not loaded yet!`);
+        addDebug(`❌ ERROR: HitBitGlobal not loaded!`);
         return;
     }
 
-    // Call submitScore synchronously and handle the result
     try {
         const result = window.HitBitGlobal.submitScore({
             game: "orbfall",
@@ -442,14 +447,12 @@ function showGameOver() {
             stats: statsPayload
         });
 
-        // Handle both promise and direct result
         if (result && typeof result.then === 'function') {
-            // It's a promise
             result
                 .then(res => {
                     addDebug(`✅ Response: ok=${res.ok}`);
                     if (res.suspicious) {
-                        addDebug(`⚠️ Marked suspicious: ${res.reason}`);
+                        addDebug(`⚠️ Suspicious: ${res.reason}`);
                     }
                     if (res.saved === false) {
                         addDebug(`ℹ️ Not saved: ${res.reason}`);
@@ -462,8 +465,7 @@ function showGameOver() {
                     addDebug(`❌ Promise error: ${err?.message || String(err)}`);
                 });
         } else {
-            // Direct result
-            addDebug(`✅ Direct result: ${JSON.stringify(result).substring(0, 100)}`);
+            addDebug(`✅ Direct result: ok=${result?.ok}`);
         }
     } catch (err) {
         addDebug(`❌ Exception: ${err?.message || String(err)}`);
