@@ -152,6 +152,7 @@ let livesLost = 0;
 let missedNormals = 0;
 let runStartedAt = 0;
 let runEventLog = "";
+let runEventTimestamps = [];  // ✅ NEW: Track timestamps for each event
 
 const NORMAL = "normal";
 const BOMB = "bomb";
@@ -218,6 +219,7 @@ function updateBalls(dt) {
             if (!lostHeartThisFrame && b.type === NORMAL) {
                 missedNormals++;
                 runEventLog += "M";
+                runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record miss timestamp
                 loseHeart();
                 combo = 0;
                 lostHeartThisFrame = true;
@@ -246,6 +248,7 @@ function handleClick(b) {
     if (b.type === BOMB) {
         bombHits++;
         runEventLog += "B";
+        runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record bomb timestamp
         playSound("bomb");
         loseHeart();
         combo = 0;
@@ -255,6 +258,7 @@ function handleClick(b) {
     if (b.type === HEART) {
         heartsCollected++;
         runEventLog += "H";
+        runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record heart timestamp
         playSound("heart");
         hearts = Math.min(5, hearts + 1);
         combo++;
@@ -267,6 +271,7 @@ function handleClick(b) {
     if (combo > maxCombo) maxCombo = combo;
     normalHits++;
     runEventLog += "N";
+    runEventTimestamps.push(Date.now() - runStartedAt);  // ✅ NEW: Record normal hit timestamp
     score += 10 * combo;
 }
 
@@ -332,6 +337,7 @@ function startGame() {
     livesLost = 0;
     missedNormals = 0;
     runEventLog = "";
+    runEventTimestamps = [];  // ✅ NEW: Reset timestamps at game start
     window.HitBitGlobal?.startSession("orbfall");
     document.getElementById("startScreen").style.display = "none";
 }
@@ -377,7 +383,8 @@ function showGameOver() {
             livesLost,
             missedNormals,
             durationMs: Math.max(0, Date.now() - runStartedAt),
-            eventLog: runEventLog
+            eventLog: runEventLog,
+            eventTimestamps: runEventTimestamps  // ✅ NEW: Include timestamps in submission
         }
     });
 
