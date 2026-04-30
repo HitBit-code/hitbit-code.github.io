@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Orb-Fall</title>
+
+<!-- Correct favicon -->
+<link rel="icon" href="/favicon.ico?v=3" type="image/x-icon">
+<link rel="stylesheet" href="../../assets/hitbit-shared.css?v=2">
+
+<style>
+body {
+    margin: 0;
+    background: #0a0a0a;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: white;
+    user-select: none;
+}
+
+canvas#game {
+    display: block;
+    position: fixed;
+    top: var(--hb-toolbar-height);
+    left: 0;
+}
+
+#hitbit {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #00ff00;
+    text-shadow: 0 0 10px #00ff00;
+    letter-spacing: 2px;
+    z-index: 10;
+    cursor: pointer;
+}
+
+#combo {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 20px;
+    z-index: 10;
+}
+
+#gameover, #startScreen {
+    position: fixed;
+    top: calc(50% + var(--hb-toolbar-height) / 2);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 30;
+    cursor: pointer;
+    user-select: none;
+}
+
+#startScreen {
+    display: block;
+    font-size: 36px;
+    color: white;
+}
+
+#gameover {
+    display: none;
+    font-size: 36px;
+}
+
+#scoreGraph {
+    margin-top: 20px;
+    width: 90%;
+    max-width: 600px;
+    height: 200px;
+}
+</style>
+</head>
+<body data-hitbit-page="game" data-hitbit-game="orbfall" data-hitbit-remove="#hitbit">
+
+<div id="hitbit" onclick="goHome()">HitBit</div>
+<div id="combo"></div>
+<div id="gameover"></div>
+<div id="startScreen">Click to Start</div>
+
+<canvas id="game"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+// Resize canvas
+function resizeCanvas() {
+    const toolbarHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--hb-toolbar-height"), 10) || 58;
+    canvas.width = window.innerWidth;
+    canvas.height = Math.max(320, window.innerHeight - toolbarHeight);
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function goHome() { window.location.href = "/"; }
+
+// ⭐ BUILT-IN SOUND ENGINE (soft pop, ding, thud)
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    if (type === "normal") {
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(380, audioCtx.currentTime + 0.12);
+
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+    }
+
+    if (type === "heart") {
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(650, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.15);
+
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.25);
+    }
+
+    if (type === "bomb") {
+        osc.type = "square";
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(60, audioCtx.currentTime + 0.2);
+
+        gain.gain.setValueAtTime(0.45, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+    }
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.35);
+}
+
+let pastScores = JSON.parse(localStorage.getItem("orbFallScores") || "[]").slice(-50);
+let highscore = parseInt(localStorage.getItem("orbFallHighscore") || "0");
+
+let balls = [];
+let score = 0;
+let combo = 0;
+let maxCombo = 0;
+let hearts = 3;
+let wave = 1;
+let gameOverState = false;
+let waveDelay = 0;
+let gameStarted = false;
+let normalHits = 0;
+let bombHits = 0;
+let heartsCollected = 0;
+let livesLost = 0;
+let missedNormals = 0;
+let runStartedAt = 0;
+let runEventLog = "";
+
+const NORMAL = "normal";
+const BOMB = "bomb";
+const HEART = "heart";
+const maxBallsOnScreen = 3;
+
+function ballsPerWave() {
+    return Math.min(2 + Math.floor((wave-1)/2), maxBallsOnScreen);
+}
+
+function spawnBall() {
+    if (balls.length >= maxBallsOnScreen) return;
+    const x = Math.random() * (canvas.width - 100) + 50;
+    const y = canvas.height + 50;
+
+    let type = NORMAL;
+    const r = Math.random();
+    if (r < 0.05) type = BOMB;
+    else if (r < 0.07) type = HEART;
+
+    const minHeightMargin = 250;
+    const maxHeightMargin = 50;
+    const maxVy = Math.sqrt(2 * 0.25 * (canvas.height - minHeightMargin));
+    const initialVy = -(Math.random() * (maxVy - 14) + 14);
+
+    balls.push({
+        x,
+        y,
+        radius: 35,
+        vx: (Math.random() * 2.5) - 1.25,
+        vy: initialVy,
+        gravity: 0.25,
+        type,
+        inScreen: false,
+        maxHeight: maxHeightMargin
+    });
+}
+
+function spawnWave() {
+    const count = ballsPerWave();
+    for (let i = 0; i < count; i++) spawnBall();
+    wave++;
+}
+
+// ✅ FIXED HERE
+function updateBalls(dt) {
+    let lostHeartThisFrame = false;
+
+    for (let i = balls.length - 1; i >= 0; i--) {
+        const b = balls[i];
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        b.vy += b.gravity * dt;
+        if (b.vy > 15) b.vy = 15;
+
+        if (b.y - b.radius < b.maxHeight) { b.y = b.maxHeight + b.radius; b.vy = 0; }
+
+        if (b.x - b.radius < 0) { b.x = b.radius; b.vx *= -1; }
+        if (b.x + b.radius > canvas.width) { b.x = canvas.width - b.radius; b.vx *= -1; }
+
+        if (!b.inScreen && b.y - b.radius <= canvas.height) b.inScreen = true;
+
+        if (b.inScreen && b.y - b.radius > canvas.height) {
+            if (!lostHeartThisFrame && b.type === NORMAL) {
+                missedNormals++;
+                runEventLog += "M";
+                loseHeart();
+                combo = 0;
+                lostHeartThisFrame = true;
+            }
+            balls.splice(i, 1);
+        }
+    }
+}
+
+function handleInput(x, y) {
+    if (!gameStarted) { startGame(); return; }
+    if (gameOverState) return;
+
+    for (let i = balls.length - 1; i >= 0; i--) {
+        const b = balls[i];
+        const dx = x - b.x;
+        const dy = y - b.y;
+        if (dx*dx + dy*dy <= (b.radius + 5)*(b.radius + 5)) {
+            handleClick(b);
+            balls.splice(i, 1);
+        }
+    }
+}
+
+function handleClick(b) {
+    if (b.type === BOMB) {
+        bombHits++;
+        runEventLog += "B";
+        playSound("bomb");
+        loseHeart();
+        combo = 0;
+        return;
+    }
+
+    if (b.type === HEART) {
+        heartsCollected++;
+        runEventLog += "H";
+        playSound("heart");
+        hearts = Math.min(5, hearts + 1);
+        combo++;
+        return;
+    }
+
+    playSound("normal");
+
+    combo++;
+    if (combo > maxCombo) maxCombo = combo;
+    normalHits++;
+    runEventLog += "N";
+    score += 10 * combo;
+}
+
+function loseHeart() {
+    hearts--;
+    livesLost++;
+    if (hearts <= 0) { showGameOver(); }
+}
+
+function drawBall(b) {
+    ctx.beginPath();
+    if (b.type === NORMAL) ctx.fillStyle = "#66ccff";
+    if (b.type === BOMB) ctx.fillStyle = "#ff4444";
+    if (b.type === HEART) ctx.fillStyle = "#ff66aa";
+    ctx.shadowBlur = 20;
+    ctx.shadowColor = ctx.fillStyle;
+    ctx.arc(b.x, b.y, b.radius, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+}
+
+function drawHeart(x, y, size, color) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    const topCurveHeight = size * 0.3;
+    ctx.moveTo(0, topCurveHeight);
+    ctx.bezierCurveTo(0, 0, -size/2, 0, -size/2, topCurveHeight);
+    ctx.bezierCurveTo(-size/2, size*0.6, 0, size, 0, size*0.9);
+    ctx.bezierCurveTo(0, size, size/2, size*0.6, size/2, topCurveHeight);
+    ctx.bezierCurveTo(size/2, 0, 0, 0, 0, topCurveHeight);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 3;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = color;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+}
+
+function drawUI() {
+    ctx.clearRect(0, 0, canvas.width, 100);
+    for (let i = 0; i < hearts; i++) drawHeart(30 + i*50, 50, 20, "#00ff00");
+    ctx.fillStyle = "#00ff00";
+    ctx.font = "20px Arial";
+    ctx.fillText(`Score: ${score}`, 30, 90);
+    if (combo > 1) {
+        ctx.fillStyle = "#ff7700";
+        ctx.font = "20px Arial";
+        ctx.fillText(`🔥 Combo x${combo}`, canvas.width - 130, 50);
+    }
+    ctx.fillStyle = "#00ff00";
+    ctx.font = "20px Arial";
+    ctx.fillText("Orb-Fall", 10, canvas.height - 20);
+}
+
+function startGame() {
+    gameStarted = true;
+    runStartedAt = Date.now();
+    normalHits = 0;
+    bombHits = 0;
+    heartsCollected = 0;
+    livesLost = 0;
+    missedNormals = 0;
+    runEventLog = "";
+    window.HitBitGlobal?.startSession("orbfall");
+    document.getElementById("startScreen").style.display = "none";
+}
+
+function showGameOver() {
+    gameOverState = true;
+
+    pastScores.push(score);
+    if (pastScores.length > 50) pastScores.shift();
+    localStorage.setItem("orbFallScores", JSON.stringify(pastScores));
+
+    if (score > highscore) {
+        highscore = score;
+        localStorage.setItem("orbFallHighscore", highscore);
+    }
+
+    const avgScore = pastScores.length ? Math.round(pastScores.reduce((a,b)=>a+b)/pastScores.length) : 0;
+
+    document.getElementById("gameover").innerHTML = `
+        <div style="color:#00ff00;text-shadow:0 0 10px #00ff00;">GAME OVER</div>
+        <br>
+        <div style="color:#00ff00;">Score: ${score}</div>
+        <div style="color:#00ff00;">Max Combo: ${maxCombo}</div>
+        <div style="color:#00ff00;">Waves Survived: ${wave - 1}</div>
+        <div style="color:#00ff00;">Highscore: ${highscore}</div>
+        <div style="color:#00ff00;">Average Score: ${avgScore}</div>
+        <br>
+        <canvas id="scoreGraph"></canvas>
+        <div style="font-size:20px;opacity:0.7;margin-top:10px;">Click to Restart</div>
+    `;
+
+    document.getElementById("gameover").style.display = "block";
+
+    window.HitBitGlobal?.submitScore({
+        game: "orbfall",
+        score,
+        stats: {
+            maxCombo,
+            wavesSurvived: Math.max(0, wave - 1),
+            orbHits: normalHits,
+            bombHits,
+            heartsCollected,
+            livesLost,
+            missedNormals,
+            durationMs: Math.max(0, Date.now() - runStartedAt),
+            eventLog: runEventLog
+        }
+    });
+
+    const graphCanvas = document.getElementById("scoreGraph");
+    const g = graphCanvas.getContext("2d");
+    const containerWidth = Math.min(window.innerWidth * 0.9, 600);
+    const containerHeight = 200;
+    graphCanvas.width = containerWidth;
+    graphCanvas.height = containerHeight;
+
+    const padding = 20;
+    const w = containerWidth - padding*2;
+    const h = containerHeight - padding*2;
+    const maxScore = Math.max(...pastScores);
+
+    g.beginPath();
+    pastScores.forEach((s,i)=>{
+        const x = padding + (i / (pastScores.length-1||1)) * w;
+        const y = containerHeight - padding - (s/maxScore)*h;
+        if(i===0) g.moveTo(x,y);
+        else g.lineTo(x,y);
+    });
+    g.strokeStyle = "#00ff00";
+    g.lineWidth = 3;
+    g.shadowBlur = 10;
+    g.shadowColor = "#00ff00";
+    g.stroke();
+    g.shadowBlur = 0;
+
+    pastScores.forEach((s,i)=>{
+        const x = padding + (i / (pastScores.length-1||1)) * w;
+        const y = containerHeight - padding - (s/maxScore)*h;
+        g.beginPath();
+        g.arc(x,y,5,0,Math.PI*2);
+        g.fillStyle="#ffdd33";
+        g.fill();
+        g.fillStyle="#ffffff";
+        g.font="12px Arial";
+        g.fillText(s,x-10,y-10);
+    });
+}
+
+document.getElementById("gameover").addEventListener("click",()=>location.reload());
+
+canvas.addEventListener("mousedown",(e)=>handleInput(e.clientX, e.clientY - canvas.getBoundingClientRect().top));
+canvas.addEventListener("touchstart",(e)=>handleInput(e.touches[0].clientX, e.touches[0].clientY - canvas.getBoundingClientRect().top));
+document.getElementById("startScreen").addEventListener("click",startGame);
+
+let lastTime = performance.now();
+
+function loop(){
+    const now = performance.now();
+    let dt = (now - lastTime) / 16.666;
+    lastTime = now;
+
+    ctx.clearRect(0,100,canvas.width,canvas.height);
+    if(gameStarted && !gameOverState){
+        if(balls.length===0){
+            waveDelay++;
+            if(waveDelay>100){spawnWave(); waveDelay=0;}
+        }
+        if(balls.length>0) updateBalls(dt);
+    }
+    drawUI();
+    balls.forEach(drawBall);
+    requestAnimationFrame(loop);
+}
+loop();
+</script>
+<script src="../../assets/hitbit-shared.js?v=4"></script>
+</body>
+</html>
