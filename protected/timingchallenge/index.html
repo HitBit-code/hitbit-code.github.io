@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script>
+    // Block direct access - must be loaded inside an iframe from the same origin
+    if (window.self === window.top) {
+      document.documentElement.innerHTML = '';
+      window.location.replace('/');
+    }
+  </script>
+  <script>
+    // Safe localStorage shim for sandboxed iframe
+    (function() {
+      var _mem = {};
+      try {
+        localStorage.setItem('__hb_test__', '1');
+        localStorage.removeItem('__hb_test__');
+      } catch(e) {
+        // localStorage blocked by sandbox - use in-memory fallback
+        window.localStorage = {
+          getItem:    function(k)    { return _mem.hasOwnProperty(k) ? _mem[k] : null; },
+          setItem:    function(k, v) { _mem[k] = String(v); },
+          removeItem: function(k)    { delete _mem[k]; },
+          clear:      function()     { _mem = {}; }
+        };
+      }
+    })();
+  </script>
+  <style>
+    /* Inside sandboxed iframe: toolbar is handled by shell, so height = 0 here */
+    :root { --hb-toolbar-height: 0px; }
+    body { padding-top: 0 !important; margin-top: 0 !important; }
+  </style>
+  <title>HitBit</title>
+
+  <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon">
+  
+
+  <style>
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      user-select: none;
+      overflow: hidden;
+      padding-top: var(--hb-toolbar-height);
+    }
+
+    #logo {
+      position: fixed;
+      top: 15px;
+      left: 20px;
+      font-size: 32px;
+      color: #00ff88;
+      text-shadow: 0 0 15px #00ff88;
+      z-index: 20;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #tagline {
+      position: fixed;
+      bottom: 15px;
+      left: 20px;
+      font-size: 18px;
+      color: #00ff88;
+      opacity: 0.75;
+      text-shadow: 0 0 10px #00ff88;
+      pointer-events: none;
+      z-index: 20;
+      font-weight: bold;
+    }
+
+    #titleScreen {
+      position: fixed;
+      top: var(--hb-toolbar-height);
+      left: 0;
+      width: 100vw;
+      height: calc(100vh - var(--hb-toolbar-height));
+      background: rgba(0,0,0,0.9);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      transition: opacity 0.5s ease;
+    }
+
+    #titleScreen h2 {
+      font-size: 32px;
+      color: #00ffaa;
+      opacity: 0.85;
+      text-shadow: 0 0 12px #00ffaa;
+    }
+
+    #scoreDisplay {
+      font-size: 28px;
+      margin-top: 20px;
+      color: #00ff88;
+    }
+
+    #canvas {
+      display: block;
+      margin: 20px auto;
+      background: #111;
+      border-radius: 50%;
+    }
+
+    #overlay {
+      position: fixed;
+      top: var(--hb-toolbar-height);
+      left: 0;
+      width: 100vw;
+      height: calc(100vh - var(--hb-toolbar-height));
+      background: rgba(0,0,0,0.85);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    #graphCanvas {
+      background: #111;
+      border: 2px solid #00ff88;
+      margin-top: 20px;
+    }
+
+    .pop {
+      animation: popAnim 0.25s ease;
+    }
+
+    @keyframes popAnim {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.25); }
+      100% { transform: scale(1); }
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 28px;
+      font-size: 20px;
+      border: none;
+      border-radius: 8px;
+      background: #00ff88;
+      color: #000;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #33ffaa;
+      transform: scale(1.05);
+    }
+  </style>
+
+  <script>
+    // HitBit postMessage shim - replaces HitBitGlobal inside sandboxed iframe
+    window.HitBitGlobal = {
+      startSession: function(game) {
+        window.parent.postMessage({ type: 'HB_START_SESSION', game: game }, '*');
+      },
+      submitScore: function(payload) {
+        window.parent.postMessage({ type: 'HB_SUBMIT_SCORE', payload: payload }, '*');
+      }
+    };
+  </script>
+  <style>
+    /* Mobile touch fix - prevent browser scroll hijacking game taps */
+    canvas, #gameContainer, #game, #titleScreen, #startScreen, #gameover, #overlay {
+      touch-action: none;
+    }
+    body {
+      touch-action: none;
+      overscroll-behavior: none;
+    }
+  </style>
+</head>
+<body>
+
+<div id="logo">HitBit</div>
+<div id="tagline">Timing Challenge</div>
+
+<div id="titleScreen">
+  <h2>Tap to Start</h2>
+</div>
+
+<div id="scoreDisplay">Score: 0</div>
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<div id="overlay">
+  <h1>Stats</h1>
+  <h2 id="finalScore"></h2>
+  <h3 id="highScore"></h3>
+  <h3 id="accuracy"></h3>
+  <h3 id="avgScore"></h3>
+
+  <canvas id="graphCanvas" width="400" height="200"></canvas>
+
+  <button id="playAgainBtn" tabindex="-1">Play Again</button>
+</div>
+
+<script>
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  const logo = document.getElementById("logo");
+
+  logo.addEventListener("click", () => {
+    window.parent.postMessage({type:'HB_NAVIGATE',url:'/'},'*');
+  });
+
+  let gameStarted = false;
+
+  let angle = 0;
+  let speed = 0.03;
+  let direction = 1;
+  let score = 0;
+  let running = false;
+
+  let totalPrecision = 0;
+  let precisionHits = 0;
+  let perfectHits = 0;
+  let misses = 0;
+  let runStartedAt = 0;
+  let runEventLog = "";
+
+  let barArcHalf = 0.25;
+  const minArc = 0.03;
+  const baseShrinkPerHit = (0.25 - minArc) / 10;
+  let shrinkPerHit = baseShrinkPerHit;
+  let barAngle = 0;
+
+  let inputLocked = false;
+  let spaceDown = false;
+
+  let combo = 0;
+
+  let barFlashTimer = 0;
+  let barFlashColor = null;
+
+  let shakeTimer = 0;
+  let shakeMagnitude = 0;
+
+  const floatingTexts = [];
+  const particles = [];
+
+  let audioCtx = null;
+  function getAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+  }
+
+  function playHitSound() {
+    const ctxA = getAudioCtx();
+    const osc = ctxA.createOscillator();
+    const gain = ctxA.createGain();
+    osc.frequency.value = 600;
+    gain.gain.setValueAtTime(0.2, ctxA.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctxA.currentTime + 0.05);
+    osc.connect(gain); gain.connect(ctxA.destination);
+    osc.start(); osc.stop(ctxA.currentTime + 0.05);
+  }
+
+  function playPerfectSound() {
+    const ctxA = getAudioCtx();
+    const osc = ctxA.createOscillator();
+    const gain = ctxA.createGain();
+    osc.frequency.value = 1200;
+    gain.gain.setValueAtTime(0.3, ctxA.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctxA.currentTime + 0.15);
+    osc.connect(gain); gain.connect(ctxA.destination);
+    osc.start(); osc.stop(ctxA.currentTime + 0.15);
+  }
+
+  function playMissSound() {
+    const ctxA = getAudioCtx();
+    const osc = ctxA.createOscillator();
+    const gain = ctxA.createGain();
+    osc.frequency.value = 120;
+    gain.gain.setValueAtTime(0.4, ctxA.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctxA.currentTime + 0.2);
+    osc.connect(gain); gain.connect(ctxA.destination);
+    osc.start(); osc.stop(ctxA.currentTime + 0.2);
+  }
+
+  function playNearMissSound() {
+    const ctxA = getAudioCtx();
+    const osc = ctxA.createOscillator();
+    const gain = ctxA.createGain();
+    osc.type = "square";
+    osc.frequency.setValueAtTime(300, ctxA.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(800, ctxA.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.25, ctxA.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctxA.currentTime + 0.1);
+    osc.connect(gain); gain.connect(ctxA.destination);
+    osc.start(); osc.stop(ctxA.currentTime + 0.1);
+  }
+
+  const HIGH_KEY = "hitbitHigh";
+  const PRECISION_HISTORY_KEY = "hitbitPrecisionHistory";
+  const SCORE_HISTORY_KEY = "hitbitScoreHistory";
+
+  function lerp(a, b, t) { return a + (b - a) * t; }
+
+  function getBarColor() {
+    if (barFlashTimer > 0 && barFlashColor) return barFlashColor;
+    const t = Math.min(score / 10, 1);
+    const r = lerp(0, 255, t);
+    const g = lerp(255, 0, t);
+    return `rgb(${r},${g},0)`;
+  }
+
+  function smallestAngleDiff(a, b) {
+    let diff = (a - b) % (Math.PI * 2);
+    if (diff < -Math.PI) diff += Math.PI * 2;
+    if (diff > Math.PI) diff -= Math.PI * 2;
+    return Math.abs(diff);
+  }
+
+  function addFloatingText(text, color, duration = 800) {
+    floatingTexts.push({
+      x: 250,
+      y: 210,
+      text,
+      color,
+      alpha: 1,
+      life: duration,
+      maxLife: duration,
+      vy: -0.05
+    });
+  }
+
+  function updateFloatingTexts(delta) {
+    const dt = delta / 16.67;
+    for (let i = floatingTexts.length - 1; i >= 0; i--) {
+      const ft = floatingTexts[i];
+      ft.life -= delta;
+      if (ft.life <= 0) {
+        floatingTexts.splice(i, 1);
+        continue;
+      }
+      ft.y += ft.vy * dt;
+      ft.alpha = Math.max(0, ft.life / ft.maxLife);
+    }
+  }
+
+  function drawFloatingTexts() {
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "20px Arial";
+    for (const ft of floatingTexts) {
+      ctx.globalAlpha = ft.alpha;
+      ctx.fillStyle = ft.color;
+      ctx.fillText(ft.text, ft.x, ft.y);
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  function spawnParticles(x, y, color) {
+    for (let i = 0; i < 20; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 3 + 1;
+      particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 600,
+        maxLife: 600,
+        color
+      });
+    }
+  }
+
+  function updateParticles(delta) {
+    const dt = delta / 16.67;
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.life -= delta;
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= 0.98;
+      p.vy *= 0.98;
+    }
+  }
+
+  function drawParticles() {
+    ctx.save();
+    for (const p of particles) {
+      ctx.globalAlpha = p.life / p.maxLife;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  let lastTime = performance.now();
+
+  function draw(now) {
+    let delta = now - lastTime;
+    if (delta > 50) delta = 50;
+    const dt = delta / 16.67;
+    lastTime = now;
+
+    ctx.clearRect(0, 0, 500, 500);
+
+    if (!running) {
+      requestAnimationFrame(draw);
+      return;
+    }
+
+    updateFloatingTexts(delta);
+    updateParticles(delta);
+
+    let offsetX = 0;
+    let offsetY = 0;
+    if (shakeTimer > 0) {
+      shakeTimer -= delta;
+      const intensity = (shakeTimer / 150) * shakeMagnitude;
+      offsetX = (Math.random() - 0.5) * intensity;
+      offsetY = (Math.random() - 0.5) * intensity;
+    }
+
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+
+    const cx = 250, cy = 250, radius = 180;
+
+    if (barFlashTimer > 0) {
+      barFlashTimer -= delta;
+      if (barFlashTimer <= 0) barFlashColor = null;
+    }
+
+    ctx.strokeStyle = getBarColor();
+    ctx.lineWidth = 20;
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, barAngle - barArcHalf, barAngle + barArcHalf);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#00ffff";
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+    ctx.stroke();
+
+    drawParticles();
+    drawFloatingTexts();
+
+    ctx.restore();
+
+    document.getElementById("scoreDisplay").textContent =
+      "Score: " + score + (combo > 0 ? "  x" + combo : "");
+
+    angle += speed * direction * dt;
+    requestAnimationFrame(draw);
+  }
+
+  function reverseSpin() {
+    direction *= -1;
+    speed += 0.01;
+    shrinkPerHit = baseShrinkPerHit * 1.5;
+    barFlashColor = "#ffffff";
+    barFlashTimer = 150;
+  }
+
+  function hit() {
+    if (!running) return;
+
+    if (inputLocked) return;
+    inputLocked = true;
+    setTimeout(() => inputLocked = false, 120);
+
+    const diff = smallestAngleDiff(angle, barAngle);
+    const isHit = diff <= barArcHalf;
+
+    if (!isHit) {
+      misses++;
+      runEventLog += "X";
+      playMissSound();
+      combo = 0;
+      endGame();
+      return;
+    }
+
+    const normalized = diff / barArcHalf;
+    let precision = Math.max(1, Math.round((1 - normalized) * 100));
+
+    totalPrecision += precision;
+    precisionHits++;
+
+    if (precision >= 95) {
+      perfectHits++;
+      runEventLog += "P";
+      combo++;
+
+      if (combo === 1) {
+        score += 1;
+        addFloatingText("PERFECT!", "#00ff88", 800);
+      } else if (combo === 2) {
+        score += 1;
+        score = score * 2;
+        addFloatingText("x2 MULTIPLIER!", "#00ff88", 900);
+      } else {
+        score = score * combo;
+        addFloatingText("x" + combo + " MULTIPLIER!", "#00ff88", 900);
+      }
+
+      const cx = 250, cy = 250, radius = 180;
+      const px = cx + Math.cos(angle) * radius;
+      const py = cy + Math.sin(angle) * radius;
+      spawnParticles(px, py, "#00ff88");
+
+      barFlashColor = "#ffffff";
+      barFlashTimer = 150;
+      playPerfectSound();
+    } else {
+      runEventLog += "H";
+      playHitSound();
+
+      if (precision <= 10) {
+        shakeTimer = 150;
+        shakeMagnitude = 10;
+        barFlashColor = "red";
+        barFlashTimer = 150;
+        addFloatingText("ALMOST MISSED!", "#00ff88", 800);
+        playNearMissSound();
+      }
+
+      combo = 0;
+      score += 1;
+    }
+
+    speed += 0.01;
+    barArcHalf = Math.max(minArc, barArcHalf - shrinkPerHit);
+    shrinkPerHit = baseShrinkPerHit;
+
+    if (score > 0 && score % 5 === 0) reverseSpin();
+  }
+
+  function drawGraph(history) {
+    const g = document.getElementById("graphCanvas").getContext("2d");
+    g.clearRect(0, 0, 400, 200);
+    if (history.length < 2) return;
+
+    g.strokeStyle = "#00ff88";
+    g.lineWidth = 3;
+    g.beginPath();
+
+    for (let i = 0; i < history.length; i++) {
+      let x = (i / (history.length - 1)) * 400;
+      let y = 200 - (history[i] / 100) * 200;
+      if (i === 0) g.moveTo(x, y);
+      else g.lineTo(x, y);
+    }
+
+    g.stroke();
+  }
+
+  function endGame() {
+    running = false;
+
+    const overlay = document.getElementById("overlay");
+    overlay.classList.add("show");
+
+    let final = score;
+    let displayScore = 0;
+
+    const scoreEl = document.getElementById("finalScore");
+    const highEl = document.getElementById("highScore");
+    const accEl = document.getElementById("accuracy");
+    const avgScoreEl = document.getElementById("avgScore");
+
+    let storedHigh = parseInt(localStorage.getItem(HIGH_KEY) || "0", 10);
+    if (final > storedHigh) {
+      localStorage.setItem(HIGH_KEY, final);
+      storedHigh = final;
+    }
+
+    let avgPrecision = precisionHits > 0 ? Math.round(totalPrecision / precisionHits) : 0;
+
+    let precisionHistory = JSON.parse(localStorage.getItem(PRECISION_HISTORY_KEY) || "[]");
+    precisionHistory.push(avgPrecision);
+    if (precisionHistory.length > 10) precisionHistory.shift();
+    localStorage.setItem(PRECISION_HISTORY_KEY, JSON.stringify(precisionHistory));
+
+    let scoreHistory = JSON.parse(localStorage.getItem(SCORE_HISTORY_KEY) || "[]");
+    scoreHistory.push(final);
+    if (scoreHistory.length > 50) scoreHistory.shift();
+    localStorage.setItem(SCORE_HISTORY_KEY, JSON.stringify(scoreHistory));
+
+    let avgScore = Math.round(scoreHistory.reduce((a,b)=>a+b,0) / scoreHistory.length);
+
+    window.HitBitGlobal?.submitScore({
+      game: "timing",
+      score: final,
+      stats: {
+        avgPrecision,
+        hits: precisionHits,
+        perfectHits,
+        misses,
+        durationMs: Math.max(0, Date.now() - runStartedAt),
+        eventLog: runEventLog
+      }
+    });
+
+    const interval = setInterval(() => {
+      if (displayScore < final) {
+        displayScore++;
+        scoreEl.textContent = "Score: " + displayScore;
+        scoreEl.classList.add("pop");
+        setTimeout(() => scoreEl.classList.remove("pop"), 200);
+      } else clearInterval(interval);
+    }, 40);
+
+    highEl.textContent = "High Score: " + storedHigh;
+    accEl.textContent = "Average Precision: " + avgPrecision + "%";
+    avgScoreEl.textContent = "Average Score: " + avgScore;
+
+    drawGraph(precisionHistory);
+  }
+
+  function restart() {
+    score = 0;
+    angle = 0;
+    speed = 0.03;
+    direction = 1;
+    barArcHalf = 0.25;
+    shrinkPerHit = baseShrinkPerHit;
+
+    totalPrecision = 0;
+    precisionHits = 0;
+    perfectHits = 0;
+    misses = 0;
+    combo = 0;
+    runStartedAt = Date.now();
+    runEventLog = "";
+    window.HitBitGlobal?.startSession("timing");
+
+    barAngle = Math.random() * Math.PI * 2;
+
+    barFlashTimer = 0;
+    barFlashColor = null;
+    shakeTimer = 0;
+    floatingTexts.length = 0;
+    particles.length = 0;
+
+    document.getElementById("finalScore").textContent = "";
+    document.getElementById("highScore").textContent = "";
+    document.getElementById("accuracy").textContent = "";
+    document.getElementById("avgScore").textContent = "";
+
+    document.getElementById("overlay").classList.remove("show");
+
+    running = true;
+  }
+
+  function startGame() {
+    if (gameStarted) return;
+    gameStarted = true;
+    runStartedAt = Date.now();
+    perfectHits = 0;
+    misses = 0;
+    totalPrecision = 0;
+    precisionHits = 0;
+    combo = 0;
+    runEventLog = "";
+    window.HitBitGlobal?.startSession("timing");
+
+    document.getElementById("titleScreen").style.opacity = "0";
+    setTimeout(() => {
+      document.getElementById("titleScreen").style.display = "none";
+    }, 500);
+
+    running = true;
+  }
+
+  document.getElementById("playAgainBtn").addEventListener("click", (e) => {
+    e.stopPropagation();
+    restart();
+  });
+  document.getElementById("playAgainBtn").addEventListener("touchstart", (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    restart();
+  });
+
+  window.addEventListener("touchstart", (e) => {
+    const overlay = document.getElementById("overlay");
+    if (overlay.classList.contains("show")) return;
+
+    e.preventDefault();
+
+    if (!gameStarted) startGame();
+    else hit();
+  }, { passive: false });
+
+  window.addEventListener("mousedown", (e) => {
+    const overlay = document.getElementById("overlay");
+    if (overlay.classList.contains("show")) return;
+
+    if (!gameStarted) startGame();
+    else hit();
+  });
+
+  window.addEventListener("keydown", e => {
+    if (e.code === "Space" && !spaceDown) {
+      spaceDown = true;
+
+      const overlay = document.getElementById("overlay");
+      if (overlay.classList.contains("show")) return;
+
+      if (!gameStarted) startGame();
+      else hit();
+      e.preventDefault();
+    }
+  });
+
+  window.addEventListener("keyup", e => {
+    if (e.code === "Space") spaceDown = false;
+  });
+
+  barAngle = Math.random() * Math.PI * 2;
+  lastTime = performance.now();
+  requestAnimationFrame(draw);
+</script>
+
+
+</body>
+</html>
